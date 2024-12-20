@@ -1,12 +1,23 @@
-const News = require('../models/News');
+const { News } = require('../models');
 
-const getAllNews = async (req, res) => {
+// Obtener todas las noticias
+exports.getAllNews = async (req, res) => {
   try {
-    const news = await News.findAll();
+    const news = await News.findAll({ include: 'author' });
     res.json(news);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: 'Error al obtener las noticias', error });
   }
 };
 
-module.exports = { getAllNews };
+// Crear una noticia (solo admin)
+exports.createNews = async (req, res) => {
+  const { title, content } = req.body;
+
+  try {
+    const news = await News.create({ title, content, authorId: req.user.id });
+    res.status(201).json(news);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al crear la noticia', error });
+  }
+};

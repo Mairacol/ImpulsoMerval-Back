@@ -1,18 +1,17 @@
 const express = require('express');
-const { protect } = require('../middlewares/authMiddleware');
+const { protect, adminProtect } = require('../middlewares/authMiddleware');
 const {
   getAllCourses,
   createCourse,
   enrollInCourse,
-  getUserCourses,
+  getUserCourses
 } = require('../controllers/courseController');
 
 const router = express.Router();
 
-// Rutas de cursos
-router.get('/', getAllCourses); // Obtener todos los cursos
-router.post('/', protect, createCourse); // Crear un curso (solo admin)
-router.post('/:courseId/enroll', protect, enrollInCourse); // Inscribir al usuario en un curso
-router.get('/my-courses', protect, getUserCourses); // Obtener los cursos del usuario
+router.get('/', getAllCourses);
+router.post('/', protect, adminProtect, createCourse);
+router.post('/:courseId/enroll', protect, enrollInCourse);
+router.get('/my-courses', protect, getUserCourses);
 
 module.exports = router;

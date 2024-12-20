@@ -1,18 +1,11 @@
-const axios = require('axios');
-
-// Obtener el precio del dólar actual desde una API externa
-const getDollarPrice = async (req, res) => {
-  try {
-    const response = await axios.get('https://api-dolar-externa.com/v1/dollar');
-    const { official, blue } = response.data;
-
-    res.json({
-      official: `$${official}`,
-      blue: `$${blue}`,
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener el precio del dólar' });
-  }
-};
-
-module.exports = { getDollarPrice };
+// Obtener el precio del dólar
+exports.getDollarPrice = async (req, res) => {
+    try {
+      // Aquí puedes agregar una llamada a una API externa o calcular el precio del dólar
+      const dollarPrice = { value: 350 }; // Ejemplo estático
+      res.json(dollarPrice);
+    } catch (error) {
+      res.status(500).json({ message: 'Error al obtener el precio del dólar', error });
+    }
+  };
+  

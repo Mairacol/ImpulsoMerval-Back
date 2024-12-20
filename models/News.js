@@ -15,6 +15,10 @@ const News = sequelize.define('News', {
     type: DataTypes.TEXT,
     allowNull: false,
   },
+  authorId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
