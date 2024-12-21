@@ -1,6 +1,8 @@
 const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 // Ruta para registrar un nuevo usuario
 router.post('/auth/register', async (req, res) => {
@@ -29,14 +31,12 @@ router.post('/auth/register', async (req, res) => {
     }
   });
   // Ruta para iniciar sesión
-router.post('/auth/login', async (req, res) => {
+  router.post('/auth/login', async (req, res) => {
     try {
       const { email, password } = req.body;
   
-      // Buscar el usuario en la base de datos por el email
       const user = await User.findOne({ where: { email } });
   
-      // Si no se encuentra el usuario
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -44,7 +44,6 @@ router.post('/auth/login', async (req, res) => {
         });
       }
   
-      // Validar la contraseña
       const isPasswordValid = await user.validPassword(password);
   
       if (!isPasswordValid) {
@@ -54,11 +53,24 @@ router.post('/auth/login', async (req, res) => {
         });
       }
   
-      // Si la contraseña es válida
+      // Crear el token JWT
+      const token = jwt.sign(
+        { id: user.id, email: user.email, nombre: user.nombre },
+        process.env.JWT_SECRET, // Asegúrate de tener esta clave en tu archivo .env
+        { expiresIn: '1h' } // El token expirará en 1 hora
+      );
+  
       res.status(200).json({
         success: true,
         message: 'Inicio de sesión exitoso',
-        user,
+        user: {
+          id: user.id,
+          nombre: user.nombre,
+          email: user.email,
+          rol: user.rol,
+          fecha_registro: user.fecha_registro,
+        },
+        token, // Aquí se envía el token JWT al cliente
       });
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
