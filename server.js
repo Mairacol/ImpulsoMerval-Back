@@ -15,8 +15,10 @@ app.use(express.json());
 connectDB();
 
 // Registrar las rutas de usuario, solo es necesario usar una de estas dos líneas
-app.use('/api', userRoutes);  // Usando /api para todas las rutas de usuario
-app.use('/api', protectedRoutes);  // Rutas protegidas
+// Rutas de usuario
+app.use('/api/auth', userRoutes);  // Usar prefijo '/api/auth' para las rutas de usuario
+app.use('/api', protectedRoutes);   // Usar '/api' para las rutas protegidas
+
 
 // Configura el puerto
 const PORT = process.env.PORT || 3000;
