@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const { connectDB, sequelize } = require('./db');
 const cors = require('cors');
-const { expressjwt } = require('express-jwt');
+const { expressjwt } = require('express-jwt');  // Asegúrate de importar expressjwt
 const jwt = require('jsonwebtoken');
 const app = express();
 

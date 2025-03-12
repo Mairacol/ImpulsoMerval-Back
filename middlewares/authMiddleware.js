@@ -2,6 +2,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Middleware de autenticación
 const protect = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -21,6 +22,7 @@ const protect = async (req, res, next) => {
   }
 };
 
+// Middleware de autenticación para administradores
 const adminProtect = (req, res, next) => {
   try {
     if (!req.user)

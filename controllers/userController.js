@@ -1,3 +1,4 @@
+// controllers/userController.js
 const User = require('../models/User');
 
 // Obtener perfil del usuario autenticado (ya existente)
