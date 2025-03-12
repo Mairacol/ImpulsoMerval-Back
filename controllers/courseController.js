@@ -1,4 +1,5 @@
-const { Course, User } = require('../models');
+// controllers/courseController.js
+const Course = require('../models/Course');
 
 // Obtener todos los cursos
 exports.getAllCourses = async (req, res) => {
@@ -13,7 +14,6 @@ exports.getAllCourses = async (req, res) => {
 // Crear un curso (solo admin)
 exports.createCourse = async (req, res) => {
   const { title, description, price } = req.body;
-
   try {
     const course = await Course.create({ title, description, price });
     res.status(201).json(course);
@@ -25,14 +25,11 @@ exports.createCourse = async (req, res) => {
 // Inscribir al usuario en un curso
 exports.enrollInCourse = async (req, res) => {
   const { courseId } = req.params;
-  const user = req.user; // Usuario autenticado
-
+  const user = req.user;
   try {
     const course = await Course.findByPk(courseId);
-    if (!course) {
+    if (!course)
       return res.status(404).json({ message: 'Curso no encontrado' });
-    }
-
     await user.addCourse(course);
     res.status(200).json({ message: 'Inscripción exitosa' });
   } catch (error) {
@@ -40,7 +37,7 @@ exports.enrollInCourse = async (req, res) => {
   }
 };
 
-// Obtener los cursos del usuario
+// Obtener cursos del usuario autenticado
 exports.getUserCourses = async (req, res) => {
   try {
     const courses = await req.user.getCourses();

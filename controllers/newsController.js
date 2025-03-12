@@ -1,19 +1,17 @@
-const { News } = require('../models');
+// controllers/newsController.js
+const News = require('../models/News');
 
-// Obtener todas las noticias
 exports.getAllNews = async (req, res) => {
   try {
-    const news = await News.findAll({ include: 'author' });
+    const news = await News.findAll();
     res.json(news);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener las noticias', error });
   }
 };
 
-// Crear una noticia (solo admin)
 exports.createNews = async (req, res) => {
   const { title, content } = req.body;
-
   try {
     const news = await News.create({ title, content, authorId: req.user.id });
     res.status(201).json(news);

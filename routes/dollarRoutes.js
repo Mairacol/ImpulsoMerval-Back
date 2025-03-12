@@ -1,6 +1,7 @@
+// routes/dollarRoutes.js
 const express = require('express');
-const { getDollarPrice } = require('../controllers/dollarController');
 const router = express.Router();
+const { getDollarPrice } = require('../controllers/dollarController');
 
 router.get('/price', getDollarPrice);
 

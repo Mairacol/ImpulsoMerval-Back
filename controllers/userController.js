@@ -1,54 +1,36 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');  // Asegúrate de que la ruta sea correcta
+const User = require('../models/User');
 
-// Registro de usuario
-exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
-
+// Obtener perfil del usuario autenticado (ya existente)
+exports.getUserProfile = async (req, res) => {
   try {
-    // Encriptamos la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = req.user.userId || req.user.id;
+    if (!userId)
+      return res.status(400).json({ success: false, message: 'ID de usuario no encontrado en el token' });
     
-    // Creamos el usuario en la base de datos
-    const user = await User.create({ name, email, password: hashedPassword });
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'nombre', 'email', 'rol', 'fecha_registro'],
+    });
+    if (!user)
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
     
-    // Respondemos con éxito
-    res.status(201).json({ success: true, user });
+    res.json({ success: true, user });
   } catch (error) {
-    // En caso de error, respondemos con el error
-    res.status(500).json({ success: false, message: 'Error al registrar el usuario', error });
+    res.status(500).json({ success: false, message: 'Error al obtener el perfil', error: error.message });
   }
 };
 
-// Login de usuario
-exports.login = async (req, res) => {
-  const { email, password } = req.body;
-
+// Obtener lista de usuarios (solo para administradores)
+exports.getAllUsers = async (req, res) => {
   try {
-    // Buscamos el usuario por correo electrónico
-    const user = await User.findOne({ where: { email } });
-
-    if (!user) {
-      // Si no encontramos el usuario, respondemos con un error
-      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    // Verifica que el usuario autenticado sea admin
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Acceso denegado' });
     }
-
-    // Comparamos la contraseña ingresada con la almacenada (hash)
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      // Si la contraseña no coincide, respondemos con un error
-      return res.status(400).json({ success: false, message: 'Credenciales incorrectas' });
-    }
-
-    // Si las credenciales son correctas, creamos un token JWT
-    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    // Respondemos con el token
-    res.json({ success: true, token });
+    const users = await User.findAll({
+      attributes: ['id', 'nombre', 'email', 'rol', 'fecha_registro'],
+    });
+    res.json({ success: true, users });
   } catch (error) {
-    // En caso de error, respondemos con el error
-    res.status(500).json({ success: false, message: 'Error al iniciar sesión', error });
+    res.status(500).json({ success: false, message: 'Error al obtener usuarios', error: error.message });
   }
 };

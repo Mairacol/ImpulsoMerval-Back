@@ -1,3 +1,4 @@
+// models/UserCourse.js
 const { sequelize } = require('../db');
 const User = require('./User');
 const Course = require('./Course');

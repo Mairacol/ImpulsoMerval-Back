@@ -1,57 +1,58 @@
+// models/User.js
 const { DataTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
-const { sequelize } = require('../db'); // Asegúrate de importar correctamente la conexión
+const { sequelize } = require('../db');
 
 const User = sequelize.define(
-  'usuarios', // Nombre de la tabla en la base de datos
+  'usuarios', // Nombre de la tabla
   {
     id: {
-      type: DataTypes.INTEGER, // `id` es de tipo INTEGER
-      autoIncrement: true, // Se incrementa automáticamente
-      primaryKey: true, // Es la clave primaria
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
     },
     nombre: {
-      type: DataTypes.STRING(50), // `nombre` con un límite de 50 caracteres
-      allowNull: false, // No puede ser nulo
+      type: DataTypes.STRING(50),
+      allowNull: false,
     },
     email: {
-      type: DataTypes.STRING(100), // `email` con un límite de 100 caracteres
-      allowNull: false, // No puede ser nulo
-      unique: true, // Debe ser único
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true,
     },
     password: {
-      type: DataTypes.STRING(255), // `password` con un límite de 255 caracteres
-      allowNull: false, // No puede ser nulo
+      type: DataTypes.STRING(255),
+      allowNull: false,
     },
     rol: {
-      type: DataTypes.STRING(20), // `rol` con un límite de 20 caracteres
-      defaultValue: 'usuario', // Valor por defecto: 'usuario'
+      type: DataTypes.STRING(20),
+      defaultValue: 'usuario', // Valor por defecto
     },
     fecha_registro: {
-      type: DataTypes.DATE, // `fecha_registro` es de tipo timestamp
-      defaultValue: DataTypes.NOW, // Valor por defecto: la hora actual
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
-    tableName: 'usuarios', // Asegúrate de que coincida con el nombre de la tabla en la base de datos
-    timestamps: false, // No se usarán las columnas `createdAt` y `updatedAt`
+    tableName: 'usuarios',
+    timestamps: false,
   }
 );
 
-// Hook para hashear la contraseña antes de guardar el usuario
+// Hooks para encriptar contraseña
 User.beforeCreate(async (user) => {
   if (user.password) {
     user.password = await bcrypt.hash(user.password, 10);
   }
 });
+
 User.beforeUpdate(async (user) => {
-    if (user.changed('password')) {
-        user.password = await bcrypt.hash(user.password, 10);
-    }
+  if (user.changed('password')) {
+    user.password = await bcrypt.hash(user.password, 10);
+  }
 });
 
-
-// Método para comparar la contraseña proporcionada con la almacenada
+// Método para validar la contraseña
 User.prototype.validPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };

@@ -1,7 +1,8 @@
+// routes/newsRoutes.js
 const express = require('express');
+const router = express.Router();
 const { protect, adminProtect } = require('../middlewares/authMiddleware');
 const { getAllNews, createNews } = require('../controllers/newsController');
-const router = express.Router();
 
 router.get('/', getAllNews);
 router.post('/', protect, adminProtect, createNews);

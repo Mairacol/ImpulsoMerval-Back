@@ -1,3 +1,4 @@
+// models/News.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 
@@ -7,22 +8,13 @@ const News = sequelize.define('News', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  title: {
-    type: DataTypes.STRING,
-    allowNull: false,
+  title: { type: DataTypes.STRING, allowNull: false },
+  content: { type: DataTypes.TEXT, allowNull: false },
+  authorId: { 
+    type: DataTypes.INTEGER, // Relación con el id de usuario
+    allowNull: false 
   },
-  content: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-  authorId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
+  createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
 });
 
 module.exports = News;

@@ -1,39 +1,37 @@
+// middlewares/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Asegúrate de que esta ruta sea correcta
+const User = require('../models/User');
 
 const protect = async (req, res, next) => {
-    console.log('Token recibido:', req.header('Authorization'));  // Agrega esta línea para ver si llega el token
+  try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-  
-    if (!token) {
-      console.log('Falta el token');
+    if (!token)
       return res.status(401).json({ message: 'No se proporcionó un token' });
-    }
-  
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log('Token decodificado:', decoded);
-  
-      req.user = await User.findByPk(decoded.id);
-      if (!req.user) {
-        console.log('Usuario no encontrado');
-        return res.status(404).json({ message: 'Usuario no encontrado' });
-      }
-  
-      next();
-    } catch (error) {
-      console.log('Error al verificar el token:', error.message);
-      res.status(401).json({ message: 'Token inválido o expirado' });
-    }
-  };
-  
-  
-// Middleware para verificar si el usuario es admin
-const adminProtect = (req, res, next) => {
-  if (req.user && req.user.rol !== 'admin') {
-    return res.status(403).json({ message: 'No autorizado' });
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findByPk(decoded.userId || decoded.id);
+    if (!user)
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Error al verificar el token:', error.message);
+    return res.status(401).json({ message: 'Token inválido o expirado', error: error.message });
   }
-  next(); // Si es admin, continua con la siguiente función
+};
+
+const adminProtect = (req, res, next) => {
+  try {
+    if (!req.user)
+      return res.status(401).json({ message: 'No autenticado' });
+    if (req.user.rol !== 'admin')
+      return res.status(403).json({ message: 'No autorizado' });
+    next();
+  } catch (error) {
+    console.error('Error al verificar rol de admin:', error.message);
+    return res.status(500).json({ message: 'Error del servidor', error: error.message });
+  }
 };
 
 module.exports = { protect, adminProtect };
