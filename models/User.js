@@ -26,12 +26,21 @@ const User = sequelize.define(
     },
     rol: {
       type: DataTypes.STRING(20),
-      defaultValue: 'usuario', // Valor por defecto
+      defaultValue: 'usuario', 
     },
     fecha_registro: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+    telefono: {
+      type: DataTypes.STRING, // STRING
+      allowNull: true
+    },
+    fechanacimiento: {
+      type: DataTypes.DATEONLY, //  DATEONLY
+      allowNull: true
+    }
+    
   },
   {
     tableName: 'usuarios',

@@ -5,12 +5,15 @@ const User = require('../models/User');
 
 // Registro de usuario
 exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
+  console.log('Datos recibidos:', req.body); // Verifica el payload
+  const { name, email, password, telefono, fechaNacimiento } = req.body;
   try {
     const newUser = await User.create({
       nombre: name,
       email,
       password, // Se encripta mediante el hook en el modelo
+      telefono, 
+      fechanacimiento: fechaNacimiento 
     });
     res.status(201).json({ success: true, user: newUser });
   } catch (error) {
@@ -18,6 +21,7 @@ exports.register = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al registrar el usuario', error });
   }
 };
+
 
 // Login de usuario
 exports.login = async (req, res) => {

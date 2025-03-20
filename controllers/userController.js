@@ -9,7 +9,7 @@ exports.getUserProfile = async (req, res) => {
       return res.status(400).json({ success: false, message: 'ID de usuario no encontrado en el token' });
     
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'nombre', 'email', 'rol', 'fecha_registro'],
+      attributes: ['id', 'nombre', 'email', 'rol', 'fecha_registro', 'telefono', 'fechanacimiento'],
     });
     if (!user)
       return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
