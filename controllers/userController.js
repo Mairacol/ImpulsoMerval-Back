@@ -35,3 +35,21 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al obtener usuarios', error: error.message });
   }
 };
+
+exports.updatePhoneNumber = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const { telefono } = req.body;
+
+    if (!telefono) {
+      return res.status(400).json({ success: false, message: "El número de teléfono es requerido." });
+    }
+
+    await User.update({ telefono }, { where: { id: userId } });
+
+    res.json({ success: true, message: "Número de teléfono actualizado correctamente." });
+  } catch (error) {
+    console.error("Error al actualizar el teléfono:", error);
+    res.status(500).json({ success: false, message: "Error al actualizar el teléfono." });
+  }
+};
