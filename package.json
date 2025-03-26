@@ -28,6 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
+    "puppeteer": "^24.4.0",
     "sequelize": "^6.37.5"
   },
   "devDependencies": {

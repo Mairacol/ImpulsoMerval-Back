@@ -1,10 +1,25 @@
-// controllers/dollarController.js
-exports.getDollarPrice = async (req, res) => {
+const puppeteer = require("puppeteer");
+
+const getDollarPrice = async (req, res) => {
   try {
-    // Ejemplo estático; en producción podrías llamar a una API externa
-    const dollarPrice = { value: 350 };
-    res.json(dollarPrice);
+    const browser = await puppeteer.launch({ headless: "new" });
+    const page = await browser.newPage();
+    await page.goto("https://dolarhoy.com/", { waitUntil: "domcontentloaded" });
+
+    const dolarBlue = await page.evaluate(() => {
+      const valores = document.querySelectorAll(".tile.is-child .val");
+      return {
+        compra: valores[2]?.innerText.replace("$", "").trim(),
+        venta: valores[3]?.innerText.replace("$", "").trim(),
+      };
+    });
+
+    await browser.close();
+    res.json({ dolarBlue });
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el precio del dólar', error });
+    console.error("Error en el scraping:", error);
+    res.status(500).json({ error: "No se pudo obtener el valor del dólar" });
   }
 };
+
+module.exports = { getDollarPrice };
