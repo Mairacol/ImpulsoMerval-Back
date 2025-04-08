@@ -1,64 +1,52 @@
-const puppeteer = require('puppeteer');
+// controllers/dollarController.js
+const axios = require('axios');
+
+let cachedData = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 60 * 1000; // 1 minuto
 
 const getDollarPrice = async (req, res) => {
+  const now = Date.now();
+
+  if (cachedData && (now - lastFetchTime < CACHE_DURATION)) {
+    console.log('⏱️ Usando datos cacheados del dólar');
+    return res.json(cachedData);
+  }
+
   try {
-    const browser = await puppeteer.launch({ headless: "new" });
-    const page = await browser.newPage();
-    await page.goto("https://dolarhoy.com/", { waitUntil: "domcontentloaded", timeout: 60000 });
+    const response = await axios.get('https://dolarapi.com/v1/dolares');
+    const data = response.data;
 
-    const rates = await page.evaluate(() => {
-      // Dólar Blue
-      const dolarBlue = document.querySelectorAll(".tile.is-child .val");
-      const dolarBlueCompra = dolarBlue[2]?.innerText.replace("$", "").trim();
-      const dolarBlueVenta = dolarBlue[3]?.innerText.replace("$", "").trim();
+    // Mapear los nombres que necesitas
+    const mappedRates = {
+      dolarBlue: data.find(d => d.nombre === 'Blue'),
+      dolarOficial: data.find(d => d.nombre === 'Oficial'),
+      dolarMep: data.find(d => d.nombre === 'Bolsa'),
+      liqui: data.find(d => d.nombre === 'Contado con Liqui'),
+      tarjeta: data.find(d => d.nombre === 'Tarjeta'),
+      cripto: data.find(d => d.nombre === 'Cripto'),
+    };
 
-      // Dólar Oficial
-      const dolarOficialCompra = document.querySelector("#home_0 > div:nth-child(2) > section > div > div > div.tile.is-ancestor > div.tile.is-parent.is-9.cotizacion.is-vertical > div > div.tile.is-parent.is-7.is-vertical > div:nth-child(2) .compra .val")?.innerText.replace("$", "").trim();
-      const dolarOficialVenta = document.querySelector("#home_0 > div:nth-child(2) > section > div > div > div.tile.is-ancestor > div.tile.is-parent.is-9.cotizacion.is-vertical > div > div.tile.is-parent.is-7.is-vertical > div:nth-child(2) .venta .val")?.innerText.replace("$", "").trim();
-      
-         // Dólar MEP/Bolsa
-    // Dólar MEP/Bolsa
-    const dolarMepCompra = document.querySelector("a[href='/cotizaciondolarbolsa'] + .values .compra .val")?.innerText.replace("$", "").trim();
-    const dolarMepVenta = document.querySelector("a[href='/cotizaciondolarbolsa'] + .values .venta .val")?.innerText.replace("$", "").trim();
+    // Reestructuramos el formato como el frontend espera
+    const formattedRates = {
+      dolarBlue: { compra: mappedRates.dolarBlue?.compra, venta: mappedRates.dolarBlue?.venta },
+      dolarOficial: { compra: mappedRates.dolarOficial?.compra, venta: mappedRates.dolarOficial?.venta },
+      dolarMep: { compra: mappedRates.dolarMep?.compra, venta: mappedRates.dolarMep?.venta },
+      liqui: { compra: mappedRates.liqui?.compra, venta: mappedRates.liqui?.venta },
+      tarjeta: { compra: mappedRates.tarjeta?.compra, venta: mappedRates.tarjeta?.venta },
+      cripto: { compra: mappedRates.cripto?.compra, venta: mappedRates.cripto?.venta }
+    };
 
+    // Cachear
+    cachedData = formattedRates;
+    lastFetchTime = now;
 
-      // Liqui (Actualizar con el selector adecuado si lo tienes)
-      const liqui = document.querySelectorAll("a[href='/cotizaciondolarcontadoconliqui'] + .values .val");
-      const liquiCompra = liqui[0]?.innerText.replace("$", "").trim();
-      const liquiVenta = liqui[1]?.innerText.replace("$", "").trim();
-
-      // Tarjeta (Actualizar con el selector adecuado si lo tienes)
-      const tarjeta = document.querySelectorAll("a[href='/cotizacion-dolar-tarjeta'] + .values .val");
-      const tarjetaCompra = tarjeta[0]?.innerText.replace("$", "").trim();
-
-      // Cripto (Actualizar con el selector adecuado si lo tienes)
-      const cripto = document.querySelectorAll("a[href='/seccion/bitcoins'] + .values .val");
-      const criptoCompra = cripto[0]?.innerText.replace("$", "").trim();
-      const criptoVenta = cripto[1]?.innerText.replace("$", "").trim();
-
-      //console.log('Dólar Blue:', dolarBlueCompra, dolarBlueVenta);
-      //console.log('Dólar Oficial:', dolarOficialCompra, dolarOficialVenta);
-      //console.log('Dólar Mep:', dolarMepCompra, dolarMepVenta);
-      //console.log('Dólar Liqui:', liquiCompra, liquiVenta);
-      //console.log('Dólar Tarjeta:', tarjetaCompra);
-      //console.log('Dólar Cripto:', criptoCompra,  criptoVenta);
-
-      return {
-        dolarBlue: { compra: dolarBlueCompra, venta: dolarBlueVenta },
-        dolarOficial: { compra: dolarOficialCompra, venta: dolarOficialVenta },
-        dolarMep: { compra: dolarMepCompra, venta: dolarMepVenta },
-        liqui: { compra: liquiCompra, venta: liquiVenta },
-        tarjeta: { compra: tarjetaCompra },
-        cripto: { compra: criptoCompra, venta: criptoVenta }
-      };
-    });
-
-    console.log('Rates:', rates); // Log para verificar la estructura del objeto rates
-    await browser.close();
-    res.json(rates);
+    console.log('📡 Datos actualizados desde la API');
+    res.json(formattedRates);
   } catch (error) {
-    console.error("Error en el scraping:", error);
-    res.status(500).json({ error: "No se pudo obtener el valor del dólar" });
+    console.error("❌ Error al obtener datos desde dolarapi:", error.message);
+    res.status(500).json({ error: "No se pudo obtener el valor del dólar desde la API." });
   }
 };
-module.exports = { getDollarPrice }; // Asegúrate de exportar la función correctamente
+
+module.exports = { getDollarPrice };
