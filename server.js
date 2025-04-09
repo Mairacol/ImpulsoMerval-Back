@@ -14,12 +14,25 @@ const protectedRoutes = require('./routes/protectedRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
+
 // Configuración de CORS y parseo de JSON
+const allowedOrigins = [
+  'http://localhost:3001',
+  'http://impulsomerval-frontend.s3-website.us-east-2.amazonaws.com'
+];
+
 app.use(cors({
-  origin: 'http://localhost:3001',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
+
+
 app.use(express.json());
 
 // Conectar a la base de datos
@@ -68,6 +81,7 @@ app.post('/api/auth/simulated-login', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
+
