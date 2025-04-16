@@ -18,8 +18,12 @@ const adminRoutes = require('./routes/adminRoutes');
 // Configuración de CORS y parseo de JSON
 const allowedOrigins = [
   'http://localhost:3001',
-  'http://impulsomerval-frontend.s3-website.us-east-2.amazonaws.com'
+  'http://impulsomerval-frontend.s3-website.us-east-2.amazonaws.com',
+  'https://staging.dlkgez7i5tr7u.amplifyapp.com',
+  'https://impulsomerval.duckdns.org'
 ];
+
+
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -31,7 +35,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
-
+console.log('CORS actualizado')
 
 app.use(express.json());
 
